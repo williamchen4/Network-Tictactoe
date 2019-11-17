@@ -100,7 +100,10 @@ def waitForPlayer(connectionSocket, addr, opponentType):
             secondPlayerInfo["connection"] = waitingPlayers[1][0]
             secondPlayerInfo["addr"] = waitingPlayers[1][1]
 
+            waitingPlayers = []
+            lock.release()
             new2PlayerGame(firstPlayerInfo, secondPlayerInfo)
+            lock.acquire()
 
         # close client-server connections if hybrid
         # players will connect peer-to-peer
@@ -109,8 +112,7 @@ def waitForPlayer(connectionSocket, addr, opponentType):
             waitingPlayers[1][0].close()
             numConnections -= 2
             print("Active Connections: ", numConnections)
-
-        waitingPlayers = []
+            waitingPlayers = []
 
     lock.release()
 
