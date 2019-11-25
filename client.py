@@ -4,19 +4,17 @@ import json
 from time import sleep
 
 serverName = "localhost"
-serverPort = 12000
+serverPort = 5000
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientSocket.connect((serverName, serverPort))
 
 def play(playerInfo, currentSocket):
-    print("Play", playerInfo)
+    #print("Play", playerInfo)
     state = tictactoe.getNewPlayer(playerInfo["player"])
-
-    print(state)
-
+    #print(state)
 
     if playerInfo["player"] == "O":
-        print("Wait hybrid...")
+        print("Waiting on opponent's move...")
         receiveMessage = currentSocket.recv(1024).decode("utf-8")
         state = json.loads(receiveMessage)
         state["player"] = playerInfo["player"]
@@ -42,7 +40,6 @@ def play(playerInfo, currentSocket):
     currentSocket.close()
 
 # choose opponent type
-
 print(clientSocket.recv(1024).decode("utf-8"))
 mode = input()
 clientSocket.send(mode.encode("utf-8"))
@@ -51,8 +48,13 @@ print(clientSocket.recv(1024).decode("utf-8"))
 
 playerInfo = json.loads(clientSocket.recv(1024).decode("utf-8"))
 
-print("Found Opponent:", playerInfo)
 
+if playerInfo["opponentType"] != "computer":
+    print("Found Opponent: (IP: %s, Port: %s)" % (playerInfo["opponentIP"], playerInfo["opponentPort"]))
+    print("You are player: %s" % playerInfo["player"])
+
+# Hybrid Mode: Peer-to-peer connection
+# Player X acts as client. Player O acts as server.
 if mode == "3":
     if playerInfo["player"] == "X":
         p2pClientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

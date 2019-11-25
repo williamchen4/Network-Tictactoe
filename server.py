@@ -3,12 +3,14 @@ import json
 import socket
 import threading
 
+
 numConnections = 0
 lock = threading.Lock()
-waitingPlayers = []
+waitingPlayersHuman = []
+waitingPlayersHybrid = []
 playerGo = threading.Condition()
 
-serverPort = 12000
+serverPort = 5000
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 serverSocket.bind(("",serverPort))
@@ -71,10 +73,16 @@ def new2PlayerGame(player1, player2):
 
 def waitForPlayer(connectionSocket, addr, opponentType):
     lock.acquire()
-    global waitingPlayers
+    global waitingPlayersHuman
+    global waitingPlayersHybrid
     global numConnections
 
-    opponentType = "human" if opponentType == "2" else "hybrid"
+    if opponentType == "2":
+        opponentType = "human"
+        waitingPlayers = waitingPlayersHuman
+    elif opponentType == "3":
+        opponentType = "hybrid"
+        waitingPlayers = waitingPlayersHybrid
 
     waitingPlayers.append((connectionSocket, addr))
     if(len(waitingPlayers) == 2):
@@ -100,7 +108,7 @@ def waitForPlayer(connectionSocket, addr, opponentType):
             secondPlayerInfo["connection"] = waitingPlayers[1][0]
             secondPlayerInfo["addr"] = waitingPlayers[1][1]
 
-            waitingPlayers = []
+            waitingPlayers.clear()
             lock.release()
             new2PlayerGame(firstPlayerInfo, secondPlayerInfo)
             lock.acquire()
@@ -112,13 +120,13 @@ def waitForPlayer(connectionSocket, addr, opponentType):
             waitingPlayers[1][0].close()
             numConnections -= 2
             print("Active Connections: ", numConnections)
-            waitingPlayers = []
+            waitingPlayers.clear()
 
     lock.release()
 
 def newClient(connectionSocket, addr):
     # opponent type
-    message = "\nEnter 1 to play against the computer (client-server).\nEnter 2 to play against a human (client-server).\nEnter 3 to play against a human (hybrid).\n"
+    message = "\nEnter 1 to play against the computer (client-server).\nEnter 2 to play against a human (client-server).\nEnter 3 to play against a human (hybrid / peer-to-peer).\n"
     connectionSocket.send(message.encode("utf-8"))
     opponentType = connectionSocket.recv(1024).decode("utf-8")
 
@@ -127,12 +135,13 @@ def newClient(connectionSocket, addr):
              "opponentType": "computer",
              "player": "X"
          }
-         connectionSocket.send("You are playing against the computer".encode("utf-8"))
+         response = "You are playing against the computer.\nYou are player: X"
+         connectionSocket.send(response.encode("utf-8"))
          connectionSocket.send(json.dumps(playerInfo).encode("utf-8"))
          newClientServerGame(connectionSocket, addr)
         
     elif opponentType == "2" or opponentType == "3":
-         connectionSocket.send("Waiting for another human...".encode("utf-8"))
+         connectionSocket.send("Waiting for another human to connect...".encode("utf-8"))
          waitForPlayer(connectionSocket, addr, opponentType)
 
 while True:
