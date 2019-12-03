@@ -9,9 +9,7 @@ clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientSocket.connect((serverName, serverPort))
 
 def play(playerInfo, currentSocket):
-    #print("Play", playerInfo)
     state = tictactoe.getNewPlayer(playerInfo["player"])
-    #print(state)
 
     if playerInfo["player"] == "O":
         print("Waiting on opponent's move...")

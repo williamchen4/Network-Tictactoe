@@ -1,14 +1,13 @@
+from app import app
 import tictactoe
 import json
 import socket
 import threading
 
-
 numConnections = 0
 lock = threading.Lock()
 waitingPlayersHuman = []
 waitingPlayersHybrid = []
-playerGo = threading.Condition()
 
 serverPort = 5000
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -155,5 +154,3 @@ while True:
     print("Active Connections: ", numConnections)
     lock.release()
 
-
-    
