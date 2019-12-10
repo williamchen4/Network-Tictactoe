@@ -1,4 +1,3 @@
-from app import app
 import tictactoe
 import json
 import socket

@@ -3,6 +3,7 @@ import tictactoe
 import json
 from time import sleep
 
+# set server name to IP address of server
 serverName = "localhost"
 serverPort = 5000
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
