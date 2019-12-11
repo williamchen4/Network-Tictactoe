@@ -5,8 +5,8 @@ import threading
 
 numConnections = 0
 lock = threading.Lock()
-waitingPlayersHuman = []
-waitingPlayersHybrid = []
+waitingPlayers = []
+opponentTypeList = ["computer","human","hybrid"]
 
 serverPort = 5000
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -71,17 +71,9 @@ def new2PlayerGame(player1, player2):
 
 def waitForPlayer(connectionSocket, addr, opponentType):
     lock.acquire()
-    global waitingPlayersHuman
-    global waitingPlayersHybrid
+    global waitingPlayers
     global numConnections
-
-    if opponentType == "2":
-        opponentType = "human"
-        waitingPlayers = waitingPlayersHuman
-    elif opponentType == "3":
-        opponentType = "hybrid"
-        waitingPlayers = waitingPlayersHybrid
-
+    
     waitingPlayers.append((connectionSocket, addr))
     if(len(waitingPlayers) == 2):
         firstPlayerInfo = {
@@ -124,21 +116,22 @@ def waitForPlayer(connectionSocket, addr, opponentType):
 
 def newClient(connectionSocket, addr):
     # opponent type
+    global opponentTypeList
     message = "\nEnter 1 to play against the computer (client-server).\nEnter 2 to play against a human (client-server).\nEnter 3 to play against a human (hybrid / peer-to-peer).\n"
     connectionSocket.send(message.encode("utf-8"))
-    opponentType = connectionSocket.recv(1024).decode("utf-8")
-
-    if opponentType == "1":
+    usrResponse = connectionSocket.recv(1024).decode("utf-8")
+    opponentType = opponentTypeList[int(usrResponse)-1]
+    if usrResponse == "1":
          playerInfo = {
              "opponentType": "computer",
              "player": "X"
          }
-         response = "You are playing against the computer.\nYou are player: X"
+         response = "You are playing against the {0}.\nYou are player: X".format(opponentType)
          connectionSocket.send(response.encode("utf-8"))
          connectionSocket.send(json.dumps(playerInfo).encode("utf-8"))
          newClientServerGame(connectionSocket, addr)
         
-    elif opponentType == "2" or opponentType == "3":
+    elif usrResponse == "2" or usrResponse == "3":
          connectionSocket.send("Waiting for another human to connect...".encode("utf-8"))
          waitForPlayer(connectionSocket, addr, opponentType)
 
