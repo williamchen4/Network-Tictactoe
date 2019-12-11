@@ -126,7 +126,7 @@ def newClient(connectionSocket, addr):
              "opponentType": "computer",
              "player": "X"
          }
-         response = "You are playing against the {0}.\nYou are player: X".format(opponentType)
+         response = "You are playing against the %s.\nYou are player: X" % opponentType
          connectionSocket.send(response.encode("utf-8"))
          connectionSocket.send(json.dumps(playerInfo).encode("utf-8"))
          newClientServerGame(connectionSocket, addr)

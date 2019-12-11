@@ -45,7 +45,7 @@ def getNewPlayer(symbol):
 
 def userInputValid(takenSpaces, space):
     try:
-        space = int(space)
+        space = int(space)-1
         if space < 0 or space > 9 or takenSpaces[space] != False:
             return False
         return True
@@ -58,7 +58,7 @@ def userTurn(state):
     while(not userInputValid(takenSpaces, space)):
         space = input("Invalid. Enter number of cell: ")
 
-    state["takenSpaces"][int(space)] = state["player"]
+    state["takenSpaces"][int(space)-1] = state["player"]
     return state
 
 def computerTurn(state):
